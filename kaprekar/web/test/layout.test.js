@@ -2,6 +2,8 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { pathGraph } from "../src/graph.js";
 import { layoutPath, NODE_R } from "../src/layout.js";
+import { basinGraph } from "../src/graph.js";
+import { layoutBasin } from "../src/layout.js";
 
 function finite(n) { return Number.isFinite(n); }
 
@@ -25,4 +27,21 @@ test("layoutPath 27: cycle edges flagged", () => {
 
 test("NODE_R is a positive number", () => {
   assert.ok(NODE_R > 0);
+});
+
+test("layoutBasin: deterministic finite coords in bounds", () => {
+  const l = layoutBasin(basinGraph(["3524", "6174", "8352"]));
+  assert.ok(l.nodes.length >= 1);
+  for (const n of l.nodes) {
+    assert.ok(Number.isFinite(n.x) && Number.isFinite(n.y));
+    assert.ok(n.x >= 0 && n.x <= l.w && n.y >= 0 && n.y <= l.h);
+  }
+  for (const e of l.edges)
+    assert.ok([e.x1, e.y1, e.x2, e.y2].every(Number.isFinite));
+});
+
+test("layoutBasin: same input gives identical coords (deterministic)", () => {
+  const a = layoutBasin(basinGraph(["3524", "6174"]));
+  const b = layoutBasin(basinGraph(["3524", "6174"]));
+  assert.deepEqual(a.nodes, b.nodes);
 });
