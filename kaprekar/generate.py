@@ -21,9 +21,30 @@ import sys
 FIELDNAMES = ["start", "width", "step", "desc", "asc", "diff", "ending"]
 
 
-def kaprekar_steps(start: int):
+def _start_and_width(start):
     """
-    Run Kaprekar's routine from `start`, padded to the digit-length of `start`.
+    Normalize a start value into (int_value, width).
+
+    `start` may be an int (width = its digit count) or a string token
+    (width = the token length, so leading zeros like "00000001" set width 8).
+    """
+    if isinstance(start, str):
+        width = len(start)
+        value = int(start)
+    else:
+        value = start
+        width = len(str(start))
+    if value < 0:
+        raise ValueError("start must be non-negative")
+    return value, width
+
+
+def kaprekar_steps(start):
+    """
+    Run Kaprekar's routine from `start`, padded to `width` digits.
+
+    `start` may be an int or a string token; a string preserves leading
+    zeros so e.g. "00000001" runs at width 8.
 
     Returns (steps, ending):
       steps  = list of (desc, asc, diff) ints, one per iteration
@@ -31,9 +52,7 @@ def kaprekar_steps(start: int):
                "cycle" -> entered a repeating loop of length > 1
                "zero"  -> collapsed to 0 (repdigit input)
     """
-    if start < 0:
-        raise ValueError("start must be non-negative")
-    width = len(str(start))
+    start, width = _start_and_width(start)
 
     seen: dict[int, int] = {}            # value -> step index of first appearance
     steps: list[tuple[int, int, int]] = []
@@ -56,11 +75,11 @@ def kaprekar_steps(start: int):
 
 def progression_rows(start: int) -> list[dict]:
     """Return one dict row per step for `start`, ready for csv.DictWriter."""
+    value, width = _start_and_width(start)
     steps, ending = kaprekar_steps(start)
-    width = len(str(start))
     return [
         {
-            "start": start,
+            "start": value,
             "width": width,
             "step": i,
             "desc": desc,
@@ -82,7 +101,7 @@ def write_csv(starts, out) -> None:
 
 if __name__ == "__main__":
     if len(sys.argv) >= 2:
-        starts = [int(a) for a in sys.argv[1:]]
+        starts = sys.argv[1:]          # keep as strings so leading zeros set width
     else:
         starts = [3524, 852, 85310, 1111, 123456, 8730]
     write_csv(starts, sys.stdout)

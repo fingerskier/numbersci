@@ -48,6 +48,14 @@ def test_write_csv_emits_header_and_rows():
     assert reader[-1]["diff"] == "495"
 
 
+def test_width_from_literal_token_with_leading_zeros():
+    # "00000001" is 8 chars -> width 8 -> desc 10000000
+    rows = generate.progression_rows("00000001")
+    assert rows[0]["width"] == 8
+    assert rows[0]["start"] == 1
+    assert rows[0]["desc"] == 10000000
+
+
 def test_write_csv_multiple_starts():
     buf = io.StringIO()
     generate.write_csv([852, 3524], buf)
