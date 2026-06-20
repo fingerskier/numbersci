@@ -94,6 +94,7 @@ export function layoutBasin(graph) {
 
   const edges = graph.edges.map(e => {
     const a = pos.get(e.from), b = pos.get(e.to);
+    if (!a || !b) throw new Error(`layoutBasin: edge ${e.from}->${e.to} references a node with no position`);
     let kind = "line";
     if (e.from === e.to) kind = "self";
     else if (attractorSet.has(e.from) && attractorSet.has(e.to)) kind = "cycle";

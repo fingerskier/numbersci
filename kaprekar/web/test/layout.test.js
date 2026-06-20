@@ -1,9 +1,7 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { pathGraph } from "../src/graph.js";
-import { layoutPath, NODE_R } from "../src/layout.js";
-import { basinGraph } from "../src/graph.js";
-import { layoutBasin } from "../src/layout.js";
+import { pathGraph, basinGraph } from "../src/graph.js";
+import { layoutPath, layoutBasin, NODE_R } from "../src/layout.js";
 
 function finite(n) { return Number.isFinite(n); }
 
