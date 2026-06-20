@@ -126,3 +126,11 @@ Start must be non-negative; negative raises `ValueError`.
 The map is non-expanding on the fixed-width digit space and the space is
 finite — so every orbit must eventually repeat. The only question is
 *which* attractor: a fixed point, a cycle, or zero.
+
+---
+
+## Web app
+
+An interactive visualizer lives in [`web/`](web/README.md): type a number
+and see its path to the kernel/cycle as a directed graph. Run it with
+`cd web && python -m http.server`, or open the deployed GitHub Pages build.
