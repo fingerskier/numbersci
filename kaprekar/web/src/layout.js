@@ -20,9 +20,10 @@ export function layoutPath(graph) {
     return { value: node.value, padded: node.padded, x, y };
   });
 
-  const terminalSet = new Set(graph.terminal.members);
+  const terminalSet = new Set((graph.terminal && graph.terminal.members) || []);
   const edges = graph.edges.map(e => {
     const a = pos.get(e.from), b = pos.get(e.to);
+    if (!a || !b) throw new Error(`layoutPath: edge ${e.from}->${e.to} references a node with no position`);
     return {
       from: e.from, to: e.to,
       kind: classifyEdge(e.from, e.to, terminalSet),
