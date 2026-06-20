@@ -3,14 +3,16 @@
 export function startAndWidth(start) {
   let value, width;
   if (typeof start === "string") {
-    width = start.length;
     value = parseInt(start, 10);
+    if (!Number.isFinite(value)) throw new Error("start must be a number");
+    if (value < 0) throw new Error("start must be non-negative");
+    width = start.length;
   } else {
     value = start;
-    width = String(start).length;
+    if (!Number.isFinite(value)) throw new Error("start must be a number");
+    if (value < 0) throw new Error("start must be non-negative");
+    width = String(value).length;
   }
-  if (!Number.isFinite(value)) throw new Error("start must be a number");
-  if (value < 0) throw new Error("start must be non-negative");
   return { value, width };
 }
 
