@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Kaprekar Explorer</title>
+  <link rel="stylesheet" href="src/styles.css" />
+</head>
+<body>
+  <header>
+    <h1>Kaprekar Explorer</h1>
+    <p>Visualize the path from a number to its kernel or cycle.</p>
+  </header>
+
+  <form id="controls" onsubmit="return false">
+    <select id="mode" aria-label="Mode">
+      <option value="single">Single number</option>
+      <option value="basin">Basin (many starts)</option>
+    </select>
+    <input id="input" type="text" placeholder="e.g. 3524 or 00000001"
+           autocomplete="off" spellcheck="false" />
+    <button id="run" type="submit">Explore</button>
+  </form>
+
+  <p id="error" role="alert" hidden></p>
+  <p id="stat-banner" hidden></p>
+
+  <main>
+    <section id="stage" aria-label="Graph"></section>
+    <aside id="stats">
+      <dl>
+        <dt>Steps</dt><dd id="stat-steps">—</dd>
+        <dt>Ending</dt><dd id="stat-ending">—</dd>
+        <dt>Kernel / cycle</dt><dd id="stat-kernel">—</dd>
+        <dt>Width</dt><dd id="stat-width">—</dd>
+      </dl>
+    </aside>
+  </main>
+
+  <script type="module" src="src/app.js"></script>
+</body>
+</html>
