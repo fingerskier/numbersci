@@ -41,3 +41,59 @@ export function pathGraph(start) {
 
   return { nodes, edges, terminal, ending, width };
 }
+
+export function basinGraph(starts, { cap = 400 } = {}) {
+  const norm = starts.map(startAndWidth);
+  const width = Math.max(1, ...norm.map(n => n.width));
+  const pad = v => String(v).padStart(width, "0");
+
+  const next = new Map();          // value -> next value (out-degree 1)
+  const allValues = new Set();
+  const attractors = [];
+  const attractorKey = new Set();
+
+  for (const { value } of norm) {
+    const g = pathGraph(pad(value)); // force the shared width via padded token
+    for (const node of g.nodes) allValues.add(node.value);
+    for (const e of g.edges) if (!next.has(e.from)) next.set(e.from, e.to);
+    const key = g.terminal.members.slice().sort((a, b) => a - b).join(",");
+    if (!attractorKey.has(key)) {
+      attractorKey.add(key);
+      attractors.push(g.terminal);
+    }
+  }
+
+  const total = allValues.size;
+  let keep = allValues;
+  let truncated = false;
+
+  if (total > cap) {
+    truncated = true;
+    const preds = new Map();
+    for (const [from, to] of next) {
+      if (!preds.has(to)) preds.set(to, []);
+      preds.get(to).push(from);
+    }
+    keep = new Set();
+    const queue = [];
+    for (const a of attractors)
+      for (const m of a.members) { keep.add(m); queue.push(m); }
+    while (queue.length && keep.size < cap) {
+      const v = queue.shift();
+      for (const p of (preds.get(v) || [])) {
+        if (!keep.has(p)) {
+          keep.add(p);
+          queue.push(p);
+          if (keep.size >= cap) break;
+        }
+      }
+    }
+  }
+
+  const nodes = [...keep].map(v => ({ value: v, padded: pad(v) }));
+  const edges = [];
+  for (const [from, to] of next)
+    if (keep.has(from) && keep.has(to)) edges.push({ from, to });
+
+  return { nodes, edges, attractors, width, total, shown: nodes.length, truncated };
+}
