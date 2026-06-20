@@ -7,18 +7,23 @@ then subtracts (small from big). The difference becomes the next value.
 The digit count is held fixed via zero-padding -- this is essential, or the
 routine drifts and convergence breaks.
 
-Notation (e.g. a 5-digit start):
-    5:[85310,01358,83952]->[98532,23589,74943]->...
-Each bracketed triple is [descending, ascending, difference].
+`width` is always gleaned from the digit-length of the start number.
+
+Output is CSV: one row per step, with columns
+    start,width,step,desc,asc,diff,ending
 """
 
 from __future__ import annotations
 
+import csv
+import sys
 
-def kaprekar_steps(start: int, width: int | None = None):
+FIELDNAMES = ["start", "width", "step", "desc", "asc", "diff", "ending"]
+
+
+def kaprekar_steps(start: int):
     """
-    Run Kaprekar's routine from `start`, padded to `width` digits
-    (default: the digit-length of `start`).
+    Run Kaprekar's routine from `start`, padded to the digit-length of `start`.
 
     Returns (steps, ending):
       steps  = list of (desc, asc, diff) ints, one per iteration
@@ -26,10 +31,9 @@ def kaprekar_steps(start: int, width: int | None = None):
                "cycle" -> entered a repeating loop of length > 1
                "zero"  -> collapsed to 0 (repdigit input)
     """
-    if width is None:
-        width = len(str(start))
-    if start < 0 or len(str(start)) > width:
-        raise ValueError("start must be non-negative and fit within `width` digits")
+    if start < 0:
+        raise ValueError("start must be non-negative")
+    width = len(str(start))
 
     seen: dict[int, int] = {}            # value -> step index of first appearance
     steps: list[tuple[int, int, int]] = []
@@ -50,34 +54,35 @@ def kaprekar_steps(start: int, width: int | None = None):
     return steps, ending
 
 
-def format_progression(start: int, width: int | None = None) -> str:
-    """Render a progression in [desc,asc,diff]->... notation."""
-    if width is None:
-        width = len(str(start))
-    steps, ending = kaprekar_steps(start, width)
-    pad = lambda v: str(v).zfill(width)
-    triples = [f"[{pad(d)},{pad(a)},{pad(x)}]" for (d, a, x) in steps]
-    tag = {"fixed": "  (fixed point)",
-           "cycle": "  (enters cycle)",
-           "zero":  "  (collapses to 0)"}[ending]
-    return f"{width}:" + "->".join(triples) + tag
+def progression_rows(start: int) -> list[dict]:
+    """Return one dict row per step for `start`, ready for csv.DictWriter."""
+    steps, ending = kaprekar_steps(start)
+    width = len(str(start))
+    return [
+        {
+            "start": start,
+            "width": width,
+            "step": i,
+            "desc": desc,
+            "asc": asc,
+            "diff": diff,
+            "ending": ending,
+        }
+        for i, (desc, asc, diff) in enumerate(steps)
+    ]
+
+
+def write_csv(starts, out) -> None:
+    """Write CSV rows for each start in `starts` to file-like `out`."""
+    writer = csv.DictWriter(out, fieldnames=FIELDNAMES)
+    writer.writeheader()
+    for start in starts:
+        writer.writerows(progression_rows(start))
 
 
 if __name__ == "__main__":
-    import sys
-
     if len(sys.argv) >= 2:
-        start = int(sys.argv[1])
-        width = int(sys.argv[2]) if len(sys.argv) >= 3 else None
-        print(format_progression(start, width))
+        starts = [int(a) for a in sys.argv[1:]]
     else:
-        demos = [
-            (3524,   None),   # classic 4-digit -> 6174
-            (852,    None),   # 3-digit -> 495
-            (85310,  None),   # your 5-digit example
-            (1111,   None),   # repdigit -> 0
-            (123456, None),   # 6-digit
-            (8730,   4),      # width override demo
-        ]
-        for start, width in demos:
-            print(format_progression(start, width))
+        starts = [3524, 852, 85310, 1111, 123456, 8730]
+    write_csv(starts, sys.stdout)
