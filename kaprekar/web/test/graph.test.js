@@ -9,6 +9,7 @@ test("pathGraph 3524: 4 nodes, self-loop terminal at 6174", () => {
   assert.deepEqual(g.edges[g.edges.length - 1], { from: 6174, to: 6174 });
   assert.deepEqual(g.terminal, { kind: "fixed", members: [6174] });
   assert.equal(g.width, 4);
+  assert.equal(g.ending, "fixed");
 });
 
 test("pathGraph 27: cycle members in order", () => {
@@ -16,12 +17,14 @@ test("pathGraph 27: cycle members in order", () => {
   assert.equal(g.terminal.kind, "cycle");
   assert.deepEqual(g.terminal.members, [27, 45, 9, 81, 63]);
   assert.deepEqual(g.edges[g.edges.length - 1], { from: 63, to: 27 });
+  assert.equal(g.ending, "cycle");
 });
 
 test("pathGraph 1111: zero terminal", () => {
   const g = pathGraph("1111");
   assert.deepEqual(g.nodes.map(n => n.value), [1111, 0]);
   assert.deepEqual(g.terminal, { kind: "zero", members: [0] });
+  assert.equal(g.ending, "zero");
 });
 
 test("pathGraph preserves padded width", () => {

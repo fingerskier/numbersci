@@ -23,3 +23,14 @@ test("renderSVG: labels show padded values", () => {
   const svg = renderSVG(layoutPath(pathGraph("0081")));
   assert.ok(svg.includes(">0081<"));
 });
+
+test("renderSVG: escapes special chars in node labels (innerHTML XSS sink)", () => {
+  const layout = {
+    w: 120, h: 120, terminal: { kind: "fixed", members: [] },
+    nodes: [{ value: 1, padded: "<&>", x: 30, y: 30 }],
+    edges: [],
+  };
+  const svg = renderSVG(layout);
+  assert.ok(svg.includes("&lt;&amp;&gt;"), "label should be HTML-escaped");
+  assert.ok(!svg.includes("><&><"), "raw unescaped label must not appear");
+});
